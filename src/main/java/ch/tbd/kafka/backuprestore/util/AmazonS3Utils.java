@@ -8,6 +8,7 @@ import ch.tbd.kafka.backuprestore.restore.deserializers.avro.KafkaRecordAvroDese
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.PredefinedClientConfigurations;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.auth.WebIdentityTokenCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.retry.PredefinedBackoffStrategies;
@@ -48,7 +49,9 @@ public class AmazonS3Utils {
         if (connectorConfig.getAWSSignerOverrideConfig() != null) {
             clientConfiguration.setSignerOverride(connectorConfig.getAWSSignerOverrideConfig());
         }
-        AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
+        AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard().withCredentials(WebIdentityTokenCredentialsProvider.create());
+        logger.info("1 --> {}", builder);
+
         builder.withAccelerateModeEnabled(connectorConfig.getBoolean(S3_WAN_MODE_CONFIG));
         if (connectorConfig.getServiceEndpointConfig() == null) {
             builder.withRegion(connectorConfig.getRegionConfig());
@@ -56,13 +59,6 @@ public class AmazonS3Utils {
             builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(connectorConfig.getServiceEndpointConfig(), connectorConfig.getRegionConfig()));
         }
 
-        logger.info("PROFILE ==> {}", connectorConfig.getS3ProfileNameConfig());
-        if (null == connectorConfig.getS3ProfileNameConfig()) {
-            logger.info("CREDS VIA CHAIN ==> {}", DefaultAWSCredentialsProviderChain.getInstance());
-            builder.setCredentials(DefaultAWSCredentialsProviderChain.getInstance());
-        } else {
-            builder.setCredentials(new ProfileCredentialsProvider(connectorConfig.getS3ProfileNameConfig()));
-        }
         builder.withPathStyleAccessEnabled(connectorConfig.usePathStyleAccess());
         builder.withClientConfiguration(clientConfiguration);
         return builder.build();
@@ -74,7 +70,10 @@ public class AmazonS3Utils {
         if (awsSignerOverride != null) {
             clientConfiguration.setSignerOverride(awsSignerOverride);
         }
-        AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
+
+        AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard().withCredentials(WebIdentityTokenCredentialsProvider.create());
+        logger.info("2 --> {}", builder);
+
         builder.withAccelerateModeEnabled(wanModeConfig);
         if (serviceEndpoint == null) {
             builder.withRegion(regionConfig);
@@ -82,13 +81,6 @@ public class AmazonS3Utils {
             builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, regionConfig));
         }
 
-        logger.info("PROFILE ==> {}", profileNameConfig);
-        if (null == profileNameConfig) {
-            logger.info("CREDS VIA CHAIN ==> {}", DefaultAWSCredentialsProviderChain.getInstance());
-            builder.setCredentials(DefaultAWSCredentialsProviderChain.getInstance());
-        } else {
-            builder.setCredentials(new ProfileCredentialsProvider(profileNameConfig));
-        }
         builder.withPathStyleAccessEnabled(usePathStyleAccess);
         builder.withClientConfiguration(clientConfiguration);
         return builder.build();
