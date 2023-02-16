@@ -12,7 +12,7 @@
     <groupId>ch.tbd.kafka</groupId>
     <artifactId>kafka-backup-restore</artifactId>
     <packaging>jar</packaging>
-    <version>00.01.00.01-SNAPSHOT</version>
+    <version>00.01.00.02-SNAPSHOT</version>
     <name>kafka-backup-restore</name>
 
     <build>

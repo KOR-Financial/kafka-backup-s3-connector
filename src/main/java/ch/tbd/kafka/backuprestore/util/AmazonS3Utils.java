@@ -7,9 +7,9 @@ import ch.tbd.kafka.backuprestore.restore.deserializers.KafkaRecordDeserializer;
 import ch.tbd.kafka.backuprestore.restore.deserializers.avro.KafkaRecordAvroDeserializer;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.PredefinedClientConfigurations;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.retry.PredefinedBackoffStrategies;
 import com.amazonaws.retry.PredefinedRetryPolicies;
 import com.amazonaws.retry.RetryPolicy;
@@ -46,18 +46,18 @@ public class AmazonS3Utils {
     public static AmazonS3 initConnection(AbstractBaseConnectorConfig connectorConfig) {
         ClientConfiguration clientConfiguration = newClientConfiguration(connectorConfig);
         if (connectorConfig.getAWSSignerOverrideConfig() != null) {
-        	clientConfiguration.setSignerOverride(connectorConfig.getAWSSignerOverrideConfig());
+            clientConfiguration.setSignerOverride(connectorConfig.getAWSSignerOverrideConfig());
         }
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
         builder.withAccelerateModeEnabled(connectorConfig.getBoolean(S3_WAN_MODE_CONFIG));
         if (connectorConfig.getServiceEndpointConfig() == null) {
-        	builder.withRegion(connectorConfig.getRegionConfig());
+            builder.withRegion(connectorConfig.getRegionConfig());
         } else {
             builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(connectorConfig.getServiceEndpointConfig(), connectorConfig.getRegionConfig()));
         }
-        
+
         if (null == connectorConfig.getS3ProfileNameConfig()) {
-            builder.setCredentials(new ProfileCredentialsProvider());
+            builder.setCredentials(DefaultAWSCredentialsProviderChain.getInstance());
         } else {
             builder.setCredentials(new ProfileCredentialsProvider(connectorConfig.getS3ProfileNameConfig()));
         }
@@ -70,7 +70,7 @@ public class AmazonS3Utils {
                                           boolean usePathStyleAccess, String awsSignerOverride, Integer s3RetryBackoffConfig, Integer s3PartRetries, boolean useExpectToContinue) {
         ClientConfiguration clientConfiguration = newClientConfiguration(proxyUrlConfig, proxyUser, proxyPass, s3RetryBackoffConfig, s3PartRetries, useExpectToContinue);
         if (awsSignerOverride != null) {
-        	clientConfiguration.setSignerOverride(awsSignerOverride);
+            clientConfiguration.setSignerOverride(awsSignerOverride);
         }
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
         builder.withAccelerateModeEnabled(wanModeConfig);
@@ -80,7 +80,7 @@ public class AmazonS3Utils {
             builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, regionConfig));
         }
         if (null == profileNameConfig) {
-            builder.setCredentials(new ProfileCredentialsProvider());
+            builder.setCredentials(DefaultAWSCredentialsProviderChain.getInstance());
         } else {
             builder.setCredentials(new ProfileCredentialsProvider(profileNameConfig));
         }
@@ -198,6 +198,4 @@ String version = String.format(VERSION_FORMAT, Version.getVersion());
         }
         return kafkaRecordLinkedList;
     }
-
-
 }
