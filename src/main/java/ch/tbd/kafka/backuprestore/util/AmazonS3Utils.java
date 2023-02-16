@@ -56,7 +56,9 @@ public class AmazonS3Utils {
             builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(connectorConfig.getServiceEndpointConfig(), connectorConfig.getRegionConfig()));
         }
 
+        logger.info("PROFILE ==> {}", connectorConfig.getS3ProfileNameConfig());
         if (null == connectorConfig.getS3ProfileNameConfig()) {
+            logger.info("CREDS VIA CHAIN ==> {}", DefaultAWSCredentialsProviderChain.getInstance());
             builder.setCredentials(DefaultAWSCredentialsProviderChain.getInstance());
         } else {
             builder.setCredentials(new ProfileCredentialsProvider(connectorConfig.getS3ProfileNameConfig()));
@@ -79,7 +81,10 @@ public class AmazonS3Utils {
         } else {
             builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, regionConfig));
         }
+
+        logger.info("PROFILE ==> {}", profileNameConfig);
         if (null == profileNameConfig) {
+            logger.info("CREDS VIA CHAIN ==> {}", DefaultAWSCredentialsProviderChain.getInstance());
             builder.setCredentials(DefaultAWSCredentialsProviderChain.getInstance());
         } else {
             builder.setCredentials(new ProfileCredentialsProvider(profileNameConfig));
