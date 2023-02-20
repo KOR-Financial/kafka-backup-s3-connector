@@ -1,19 +1,16 @@
 package ch.tbd.kafka.backuprestore.restore.kafkaconnect;
 
 import ch.tbd.kafka.backuprestore.model.KafkaRecord;
-import ch.tbd.kafka.backuprestore.model.avro.AvroKafkaRecord;
-import ch.tbd.kafka.backuprestore.restore.deserializers.KafkaRecordDeserializer;
-import ch.tbd.kafka.backuprestore.restore.deserializers.avro.KafkaRecordAvroDeserializer;
 import ch.tbd.kafka.backuprestore.restore.kafkaconnect.config.RestoreSourceConnectorConfig;
 import ch.tbd.kafka.backuprestore.util.AmazonS3Utils;
 import ch.tbd.kafka.backuprestore.util.Constants;
 import ch.tbd.kafka.backuprestore.util.SerializationDataUtils;
 import ch.tbd.kafka.backuprestore.util.Version;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.*;
-import org.apache.avro.file.DataFileStream;
-import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.io.DatumReader;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.header.ConnectHeaders;
 import org.apache.kafka.connect.header.Header;
@@ -22,7 +19,6 @@ import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -104,11 +100,13 @@ public class RestoreSourceTask extends SourceTask {
             }
             ListObjectsRequest objectsPartitionReq = null;
             if (this.connectorConfig.isInstanceNameToRestoreConfigDefined()) {
-                objectsPartitionReq = new ListObjectsRequest().withBucketName(connectorConfig.getBucketName()).
-                        withPrefix(s3TopicName + Constants.S3_KEY_SEPARATOR + this.connectorConfig.getInstanceNameToRestoreConfig() + Constants.S3_KEY_SEPARATOR + partitionAssigned[i] + Constants.S3_KEY_SEPARATOR);
+                objectsPartitionReq = new ListObjectsRequest()
+                        .withBucketName(connectorConfig.getBucketName())
+                        .withPrefix(s3TopicName + Constants.S3_KEY_SEPARATOR + this.connectorConfig.getInstanceNameToRestoreConfig() + Constants.S3_KEY_SEPARATOR + partitionAssigned[i] + Constants.S3_KEY_SEPARATOR);
             } else {
-                objectsPartitionReq = new ListObjectsRequest().withBucketName(connectorConfig.getBucketName()).
-                        withPrefix(s3TopicName + Constants.S3_KEY_SEPARATOR + partitionAssigned[i] + Constants.S3_KEY_SEPARATOR);
+                objectsPartitionReq = new ListObjectsRequest()
+                        .withBucketName(connectorConfig.getBucketName())
+                        .withPrefix(s3TopicName + Constants.S3_KEY_SEPARATOR + partitionAssigned[i] + Constants.S3_KEY_SEPARATOR);
             }
             ObjectListing resultPartitionReq = amazonS3.listObjects(objectsPartitionReq);
             if (resultPartitionReq != null) {
@@ -212,7 +210,6 @@ public class RestoreSourceTask extends SourceTask {
         }
         return null;
     }
-
 
 
     private String keyPartitionOffsetKafkaConnect(int partition) {

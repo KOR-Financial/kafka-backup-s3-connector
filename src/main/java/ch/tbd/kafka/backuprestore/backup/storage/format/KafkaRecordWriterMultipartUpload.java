@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -111,15 +113,29 @@ public class KafkaRecordWriterMultipartUpload implements RecordWriter {
     }
 
     private String key(SinkRecord record) {
+
+        String datePartition = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+
         if (conf instanceof CompactBackupSinkConnectorConfig) {
             //manage compacted log
-            return String.format("%s/%s/%d/%s-%d-%s.avro", record.topic(), this.conf.getName(), record.kafkaPartition(),
-                    record.topic(), record.kafkaPartition(), StringUtils.leftPad(String.valueOf(record.kafkaOffset()),
-                            Constants.FIELD_INDEX_NAME_BACKUP, "0"));
+            return String.format("%s/%s/%d/%s/%s-%d-%s.avro",
+                    record.topic(),
+                    this.conf.getName(),
+                    record.kafkaPartition(),
+                    datePartition,
+                    record.topic(),
+                    record.kafkaPartition(),
+                    StringUtils.leftPad(String.valueOf(record.kafkaOffset()), Constants.FIELD_INDEX_NAME_BACKUP, "0")
+            );
         } else {
-            return String.format("%s/%d/%s-%d-%s.avro", record.topic(), record.kafkaPartition(),
-                    record.topic(), record.kafkaPartition(), StringUtils.leftPad(String.valueOf(record.kafkaOffset()),
-                            Constants.FIELD_INDEX_NAME_BACKUP, "0"));
+            return String.format("%s/%d/%s/%s-%d-%s.avro",
+                    record.topic(),
+                    record.kafkaPartition(),
+                    datePartition,
+                    record.topic(),
+                    record.kafkaPartition(),
+                    StringUtils.leftPad(String.valueOf(record.kafkaOffset()), Constants.FIELD_INDEX_NAME_BACKUP, "0")
+            );
         }
     }
 
