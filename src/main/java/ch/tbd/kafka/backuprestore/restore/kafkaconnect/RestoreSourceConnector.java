@@ -74,7 +74,7 @@ public class RestoreSourceConnector extends SourceConnector {
             } else {
                 for (S3ObjectSummary s3ObjectSummary : s3ObjectSummaries) {
                     int len = s3ObjectSummary.getKey().split(Constants.S3_KEY_SEPARATOR).length;
-                   if (len != 6) {
+                   if (len != 3) {
                         logger.error("No instance defined on configuration but the backup contains one or more instances. Please check.");
                         stop();
                         return Collections.emptyList();
