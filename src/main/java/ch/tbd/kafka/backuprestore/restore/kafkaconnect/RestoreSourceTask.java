@@ -161,10 +161,10 @@ public class RestoreSourceTask extends SourceTask {
             //restore
             List<SourceRecord> list = restore();
             if (list.isEmpty()) {
-                logger.info("No data to restore for partition {}", partitionAssigned);
+                logger.info("No data to restore for partition {} -> {}", this.kafkaTopicName, partitionAssigned);
                 break;
             } else {
-                logger.info("Send {} records to store on Kafka", list.size());
+                logger.info("Send {} records to store on Kafka {} -> {} (last read offset {})", list.size(), this.kafkaTopicName, partitionAssigned, list.get(list.size() - 1).sourceOffset());
                 return list;
             }
         }
